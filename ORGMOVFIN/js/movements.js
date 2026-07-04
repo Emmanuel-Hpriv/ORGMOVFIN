@@ -292,3 +292,36 @@ const saveExchangeMovement = (date) => {
     document.getElementById('exchange-rate-display').innerHTML = '';
     switchView('dashboard');
 };
+// Función para obtener tasa de cambio en vivo (Frankfurter API)
+async function fetchLiveRate(from, to) {
+    try {
+        const response = await fetch(`https://api.frankfurter.app/latest?from=${from}&to=${to}`);
+        if (!response.ok) return null;
+        const data = await response.json();
+        return data.rates[to];
+    } catch (error) {
+        console.error("Error al obtener tipo de cambio:", error);
+        return null;
+    }
+}
+
+// Escuchar cambios en los inputs del formulario de Divisas
+const inputOrigen = document.getElementById('monto_origen'); // Ajusta este ID al de tu HTML
+if (inputOrigen) {
+    inputOrigen.addEventListener('input', async (e) => {
+        // Ajusta estos IDs a los que uses en tu select de monedas
+        const fromCurrency = document.getElementById('moneda_origen').value; 
+        const toCurrency = document.getElementById('moneda_destino').value;
+        const amount = parseFloat(e.target.value);
+
+        if (amount > 0 && fromCurrency !== toCurrency) {
+            const rate = await fetchLiveRate(fromCurrency, toCurrency);
+            if (rate) {
+                const total = (amount * rate).toFixed(2);
+                document.getElementById('monto_destino').value = total;
+                // Opcional: Mostrar la tasa en un elemento de texto
+                console.log(`Tasa de hoy: 1 ${fromCurrency} = ${rate} ${toCurrency}`);
+            }
+        }
+    });
+}
