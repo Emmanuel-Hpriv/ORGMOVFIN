@@ -1,3 +1,51 @@
+// --- MOTOR DE RESPALDO GOOGLE DRIVE ---
+const CLIENT_ID = '855803934299-dc5onqpjplr5k5f5oroaeerb2kd4ag87.apps.googleusercontent.com'; // Pega tu ID aquí, manteniendo las comillas
+let tokenClient;
+let accessToken = null;
+
+function initGoogleDrive() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/drive.file',
+        callback: (response) => {
+            if (response.error !== undefined) throw (response);
+            accessToken = response.access_token;
+            backupToDrive();
+        },
+    });
+}
+
+function conectarDrive() {
+    if (!accessToken) {
+        tokenClient.requestAccessToken({prompt: 'consent'});
+    } else {
+        backupToDrive();
+    }
+}
+
+async function backupToDrive() {
+    if (!accessToken) return;
+    const appData = localStorage.getItem('finflow_data');
+    if (!appData) return;
+
+    const fileContent = new Blob([appData], { type: 'application/json' });
+    const metadata = { name: 'FinFlow_Backup_Automático.json', mimeType: 'application/json' };
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+    form.append('file', fileContent);
+
+    try {
+        const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+            body: form,
+        });
+        if(res.ok) console.log("¡Respaldo exitoso en Google Drive!");
+    } catch (error) {
+        console.error("Error al subir a Drive", error);
+    }
+}
+// --------------------------------------
 // ========================
 // FinFlow — Core Application
 // ========================
