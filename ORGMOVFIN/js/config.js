@@ -134,7 +134,7 @@ const renderConfig = () => {
 // Google Drive Backup
 // ========================
 const GDRIVE_CLIENT_ID = '855803934299-dc5onqpjplr5k5f5oroaeerb2kd4ag87.apps.googleusercontent.com';
-const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.file';
 let gdriveToken = null;
 let gdriveBackupTimer = null;
 
